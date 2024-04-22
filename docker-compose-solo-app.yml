@@ -1,31 +1,30 @@
 version: '3.8'
-
 services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: mysecretpassword
+    networks:
+      - app-net
+
   wordpress:
     image: wordpress:latest
     depends_on:
       - db
     volumes:
-      - "/var/www/html:/var/www/html"  # Montar el directorio NFS montado localmente
+      - wordpress_data:/var/www/html
     environment:
       WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: wordpressuser
-      WORDPRESS_DB_PASSWORD: wordpresspass
-      WORDPRESS_DB_NAME: wordpress
-    ports:
-      - "80:80"  # Exponer el puerto 80 para acceder a WordPress desde el navegador
+      WORDPRESS_DB_USER: user
+      WORDPRESS_DB_PASSWORD: password
     networks:
       - app-net
 
-  db:
-    image: mysql:5.7
-    environment:
-      MYSQL_ROOT_PASSWORD: mysecretpassword
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpressuser
-      MYSQL_PASSWORD: wordpresspass
-    networks:
-      - app-net
+volumes:
+  db_data:
+  wordpress_data:
 
 networks:
   app-net:
