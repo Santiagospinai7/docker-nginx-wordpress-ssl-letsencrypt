@@ -1,31 +1,30 @@
-version: '3.8'
-services:
-  db:
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    environment:
-      MYSQL_ROOT_PASSWORD: mysecretpassword
-    networks:
-      - app-net
+version: '3.1'
 
+services:
   wordpress:
     image: wordpress:latest
-    depends_on:
-      - db
-    volumes:
-      - wordpress_data:/var/www/html
+    ports:
+      - "80:80"  # Expone WordPress en el puerto 80 del host
     environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: user
-      WORDPRESS_DB_PASSWORD: password
-    networks:
-      - app-net
+      WORDPRESS_DB_HOST: 172.31.22.39  # Reemplaza con la IP de la instancia de DB
+      WORDPRESS_DB_USER: exampleuser  # Asegúrate de que estos valores coincidan
+      WORDPRESS_DB_PASSWORD: examplepass  # con los que configuraste en tu instancia DB
+      WORDPRESS_DB_NAME: exampledb
+    volumes:
+      - /var/www/html:/var/www/html  # Asumiendo que /var/www/html es un montaje NFS ya configurado
+    depends_on:
+      - nfs  # Esto asegura que WordPress espere a que el servicio NFS esté disponible, si se ejecuta en el mismo compose
+
+  nfs:
+    image: itsthenetwork/nfs-client:latest
+    environment:
+      NFS_SERVER: 172.31.16.30  # IP del servidor NFS
+      NFS_PATH: /var/nfs/general
+    volumes:
+      - /var/www/html:/var/www/html
 
 volumes:
-  db_data:
-  wordpress_data:
+  wp-content:  # Define volúmenes locales si es necesario, o utiliza directamente el montaje NFS
 
 networks:
-  app-net:
-    driver: bridge
+  default:  # Utiliza la red predeterminada, ajusta según sea necesario
